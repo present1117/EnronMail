@@ -3,8 +3,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.process.Tokenizer;
+import edu.stanford.nlp.process.PTBTokenizer.PTBTokenizerFactory;
 
 
 public class BOW {
@@ -14,42 +21,65 @@ public class BOW {
 	public HashMap<String, Integer> unigram_FreqHashMap;
 	public HashMap<String, Integer> bigram_FreqHashMap;
 	public PorterStemmer ps;
+	public Stopwords stop;
 	
 	/**
 	 * 
-	 * @throws IOException
 	 */
-	public BOW() throws IOException {
+	public BOW(){
 		emailId_ContentHashMap = new HashMap<>();
 		emailId_StatusHashMap = new HashMap<>();
 		unigram_FreqHashMap = new HashMap<>();
 		bigram_FreqHashMap = new HashMap<>();
 		ps = new PorterStemmer();
+		stop = new Stopwords();
 		parseFile();
 	}
 	
 	/**
 	 * 
-	 * @throws IOException
+	 * @param str
+	 * @return
 	 */
-	public void parseFile() throws IOException{
-		BufferedReader br = new BufferedReader(new FileReader(new File(rawFile)));
+	public ArrayList<String> getTokens(String str){
+		if(str==null)
+			throw new NullPointerException("String received for breaking down is Null");
+		
+		ArrayList<String> tokens = new ArrayList<String>();
+		Reader r = new StringReader(str);
+		Tokenizer<Word> tk = PTBTokenizerFactory.newWordTokenizerFactory("americanize=false").getTokenizer(r);
+        List<Word> tokenized = tk.tokenize();
+        for (Word w: tokenized) {
+            tokens.add(w.word());
+        }
+		return tokens;
+	}
+	
+	/**
+	 * 
+	 */
+	public void parseFile(){
 		String line = null;
  		ArrayList<String> candidateContents = new ArrayList<>();
-		while((line = br.readLine()) != null){
-			String [] parts = line.split("\\$");
-			if(parts.length != 3){
-				System.err.println("Error line");
-				continue;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File(rawFile)));
+			while((line = br.readLine()) != null){
+				String [] parts = line.split("40578");
+				if(parts.length != 3){
+					System.err.println("Error line");
+					continue;
+				}
+				String emailId = parts[0];
+				String status = parts[1];
+				String content = parts[2];
+				emailId_ContentHashMap.put(emailId, content);
+				emailId_StatusHashMap.put(emailId, status);
+				candidateContents.add(content);
 			}
-			String emailId = parts[0];
-			String status = parts[1];
-			String content = parts[2];
-			emailId_ContentHashMap.put(emailId, content);
-			emailId_StatusHashMap.put(emailId, status);
-			candidateContents.add(content);
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		br.close();
 		unigram_FreqHashMap = createUnigram(candidateContents);
 		bigram_FreqHashMap = createBigram(candidateContents);
 	}
@@ -62,11 +92,15 @@ public class BOW {
 		HashMap<String, Integer> result =  new HashMap<>();
 		ArrayList<String> validWords = new ArrayList<>();
 		for(String candidate: candidateContents){
-			String [] words = candidate.split(" ");
+			ArrayList<String> words = getTokens(candidate);
 			for(String word : words){
 				if(word.matches("[^0-9a-zA-Z]"))
 					continue;
+				if(stop.checkStop(word.toLowerCase()))
+					continue;
 				String item = ps.stem(word.toLowerCase());
+				if(item.contains("Invalid term") || item.contains("No term entered"))
+					continue;
 				validWords.add(item);
 			}
 		}
@@ -91,11 +125,15 @@ public class BOW {
 	public HashMap<String, Integer> createUnigram(ArrayList<String> candidateContents) {
 		HashMap<String, Integer> result = new HashMap<>();
 		for(String candidate : candidateContents){
-			String [] words = candidate.split(" ");
+			ArrayList<String> words = getTokens(candidate);
 			for(String word : words){
 				if(word.matches("[^0-9a-zA-Z]"))
 					continue;
+				if(stop.checkStop(word.toLowerCase()))
+					continue;
 				String item = ps.stem(word.toLowerCase());
+				if(item.contains("Invalid term") || item.contains("No term entered"))
+					continue;
 				if(result.containsKey(item)){
 					result.put(item, result.get(item)+1);
 				}else{
