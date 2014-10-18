@@ -1,4 +1,5 @@
 package com.enron;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -33,7 +34,6 @@ public class BOW {
 		bigram_FreqHashMap = new HashMap<>();
 		ps = new PorterStemmer();
 		stop = new Stopwords();
-		parseFile();
 	}
 	
 	/**
@@ -85,6 +85,27 @@ public class BOW {
 	}
 
 	/**
+	 * 
+	 */
+	public void parseFile(String fileName){
+		String line = null;
+ 		ArrayList<String> candidateContents = new ArrayList<>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File(fileName)));
+			while((line = br.readLine()) != null){
+				String content = line.trim();
+				if(content.length() != 0)
+					candidateContents.add(content);
+			}
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		unigram_FreqHashMap = createUnigram(candidateContents);
+		bigram_FreqHashMap = createBigram(candidateContents);
+	}
+
+	/**
 	 * Create bigram dict
 	 * @param candidateContents
 	 */
@@ -94,7 +115,7 @@ public class BOW {
 		for(String candidate: candidateContents){
 			ArrayList<String> words = getTokens(candidate);
 			for(String word : words){
-				if(word.matches("[^0-9a-zA-Z]"))
+				if(word.matches("[^a-zA-Z]"))
 					continue;
 				if(stop.checkStop(word.toLowerCase()))
 					continue;
@@ -127,7 +148,7 @@ public class BOW {
 		for(String candidate : candidateContents){
 			ArrayList<String> words = getTokens(candidate);
 			for(String word : words){
-				if(word.matches("[^0-9a-zA-Z]"))
+				if(word.matches("[^a-zA-Z]"))
 					continue;
 				if(stop.checkStop(word.toLowerCase()))
 					continue;
