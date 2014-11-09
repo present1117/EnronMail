@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import edu.stanford.nlp.ling.Word;
@@ -16,13 +17,13 @@ import edu.stanford.nlp.process.PTBTokenizer.PTBTokenizerFactory;
 
 
 public class BOW {
-	public static String rawFile = "rawData.txt";
+	
 	public HashMap<String, String> emailId_ContentHashMap;
 	public HashMap<String, String> emailId_StatusHashMap;
 	public HashMap<String, Integer> unigram_FreqHashMap;
 	public HashMap<String, Integer> bigram_FreqHashMap;
-	public PorterStemmer ps;
-	public Stopwords stop;
+	public static PorterStemmer ps=new PorterStemmer();
+	public static Stopwords stop=new Stopwords();
 	
 	/**
 	 * 
@@ -32,25 +33,34 @@ public class BOW {
 		emailId_StatusHashMap = new HashMap<>();
 		unigram_FreqHashMap = new HashMap<>();
 		bigram_FreqHashMap = new HashMap<>();
-		ps = new PorterStemmer();
-		stop = new Stopwords();
 	}
 	
 	/**
-	 * 
+	 * Input is a string, and output would be all the valid tokens for this tokens.
 	 * @param str
 	 * @return
 	 */
-	public ArrayList<String> getTokens(String str){
+	public static ArrayList<String> getTokens(String str){
 		if(str==null)
 			throw new NullPointerException("String received for breaking down is Null");
-		
 		ArrayList<String> tokens = new ArrayList<String>();
+		if(str.length() <= 0)
+			return tokens;
 		Reader r = new StringReader(str);
 		Tokenizer<Word> tk = PTBTokenizerFactory.newWordTokenizerFactory("americanize=false").getTokenizer(r);
         List<Word> tokenized = tk.tokenize();
         for (Word w: tokenized) {
-            tokens.add(w.word());
+        	String word = w.word();
+			if(word.matches("[^a-zA-Z]"))
+				continue;
+			if(stop.checkStop(word.toLowerCase()))
+				continue;
+			String item = ps.stem(word.toLowerCase());
+			if(item.contains("Invalid term") || item.contains("No term entered"))
+				continue;
+			if(item.length() > 20)
+				continue;
+			tokens.add(item);
         }
 		return tokens;
 	}
@@ -62,7 +72,7 @@ public class BOW {
 		String line = null;
  		ArrayList<String> candidateContents = new ArrayList<>();
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(rawFile)));
+			BufferedReader br = new BufferedReader(new FileReader(new File(Configures.defaultFile)));
 			while((line = br.readLine()) != null){
 				String [] parts = line.split("40578");
 				if(parts.length != 3){
@@ -83,11 +93,10 @@ public class BOW {
 		unigram_FreqHashMap = createUnigram(candidateContents);
 		bigram_FreqHashMap = createBigram(candidateContents);
 	}
-
 	/**
 	 * 
 	 */
-	public void parseFile(String fileName){
+	public HashSet<String> saveLegalTerms(String fileName){
 		String line = null;
  		ArrayList<String> candidateContents = new ArrayList<>();
 		try {
@@ -101,18 +110,12 @@ public class BOW {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		unigram_FreqHashMap = createUnigram(candidateContents);
-		bigram_FreqHashMap = createBigram(candidateContents);
+		return findValidWords(candidateContents);
 	}
 
-	/**
-	 * Create bigram dict
-	 * @param candidateContents
-	 */
-	public HashMap<String, Integer> createBigram(ArrayList<String> candidateContents) {
-		HashMap<String, Integer> result =  new HashMap<>();
-		ArrayList<String> validWords = new ArrayList<>();
-		for(String candidate: candidateContents){
+	private HashSet<String> findValidWords(ArrayList<String> candidateContents) {
+		HashSet<String> set = new HashSet<>();
+		for(String candidate : candidateContents){
 			ArrayList<String> words = getTokens(candidate);
 			for(String word : words){
 				if(word.matches("[^a-zA-Z]"))
@@ -122,18 +125,29 @@ public class BOW {
 				String item = ps.stem(word.toLowerCase());
 				if(item.contains("Invalid term") || item.contains("No term entered"))
 					continue;
-				validWords.add(item);
+				set.add(item);
 			}
 		}
-		
-		int length = validWords.size();
+		return set;
+	}
+
+	/**
+	 * Create bigram dict
+	 * @param candidateContents
+	 */
+	public HashMap<String, Integer> createBigram(ArrayList<String> candidateContents) {
+		HashMap<String, Integer> result =  new HashMap<>();
+		ArrayList<String> words=null;
+		for(String candidate: candidateContents){
+			words = getTokens(candidate);
+		}
+		int length = words.size();
 		for(int i = 0; i < length - 1; ++i){
-			String bigram = validWords.get(i) + " " + validWords.get(i+1);
-			if(result.containsKey(bigram)){
+			String bigram = words.get(i) + " " + words.get(i+1);
+			if(result.containsKey(bigram))
 				result.put(bigram, result.get(bigram)+1);
-			}else{
+			else
 				result.put(bigram, 1);
-			}
 		}
 		return result;
 	}
@@ -148,18 +162,10 @@ public class BOW {
 		for(String candidate : candidateContents){
 			ArrayList<String> words = getTokens(candidate);
 			for(String word : words){
-				if(word.matches("[^a-zA-Z]"))
-					continue;
-				if(stop.checkStop(word.toLowerCase()))
-					continue;
-				String item = ps.stem(word.toLowerCase());
-				if(item.contains("Invalid term") || item.contains("No term entered"))
-					continue;
-				if(result.containsKey(item)){
-					result.put(item, result.get(item)+1);
-				}else{
-					result.put(item, 1);
-				}
+				if(result.containsKey(word))
+					result.put(word, result.get(word)+1);
+				else
+					result.put(word, 1);
 			}
 		}
 		return result;
