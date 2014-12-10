@@ -35,7 +35,7 @@ public class MentionList {
 				}
 				output += words;
 			}
-			PrintWriter pr = new PrintWriter(new File("mentionList.txt"));
+			PrintWriter pr = new PrintWriter(new File("data/mentionList.txt"));
 			pr.write(output);
 			pr.close();
 			System.out.println("done");

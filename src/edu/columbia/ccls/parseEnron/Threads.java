@@ -86,7 +86,7 @@ public class Threads {
 		BOW LegalBow = new BOW();
 		LegalTerms = LegalBow.saveLegalTerms(Configures.legalTermsFile);
 		try {
-			PrintWriter pw = new PrintWriter(new FileOutputStream(new File("legalTerms.txt")));
+			PrintWriter pw = new PrintWriter(new FileOutputStream(new File("data/legalTerms.txt")));
 			for(String word : LegalTerms){
 				pw.write(word+"\n");
 			}
@@ -117,7 +117,7 @@ public class Threads {
 			maxHeap.add(instance);
 		}
 		try {
-			PrintWriter pw = new PrintWriter(new FileOutputStream(new File("bow.txt")));
+			PrintWriter pw = new PrintWriter(new FileOutputStream(new File("data/bow.txt")));
 			while(!maxHeap.isEmpty()) {
 				totalWords++;
 				WordCount instance = maxHeap.poll();

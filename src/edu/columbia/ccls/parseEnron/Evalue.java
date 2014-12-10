@@ -51,7 +51,7 @@ public class Evalue {
 		ArffSaver saver = new ArffSaver();
 		saver.setInstances(data);
 		try {
-			saver.setFile(new File("unigramTest.arff"));
+			saver.setFile(new File("data/unigramTest.arff"));
 			saver.writeBatch();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -88,7 +88,7 @@ public class Evalue {
 		ArffSaver saver = new ArffSaver();
 		saver.setInstances(data);
 		try {
-			saver.setFile(new File("threadTest.arff"));
+			saver.setFile(new File("data/threadTest.arff"));
 			saver.writeBatch();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -179,7 +179,7 @@ public class Evalue {
 			Instances sparseDataset = Filter.useFilter(data, nonSparseToSparseInstance);
 			ArffSaver arffSaverInstance = new ArffSaver(); 
 			arffSaverInstance.setInstances(sparseDataset); 
-			arffSaverInstance.setFile(new File("sparseMention.arff")); 
+			arffSaverInstance.setFile(new File("data/sparseMention.arff")); 
 			arffSaverInstance.writeBatch();
 		} catch (NullPointerException e) {
 			e.printStackTrace();

@@ -66,7 +66,7 @@ public class BOW {
 	}
 	
 	/**
-	 * 
+	 * use Random number to separate line, deprecate
 	 */
 	public void parseFile(){
 		String line = null;
