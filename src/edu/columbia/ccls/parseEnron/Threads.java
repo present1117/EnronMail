@@ -1,4 +1,4 @@
-package com.enron;
+package edu.columbia.ccls.parseEnron;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
+
+import edu.columbia.ccls.utils.BOW;
+import edu.columbia.ccls.utils.Configures;
 
 public class Threads {
 	public static HashSet<String> LegalTerms;

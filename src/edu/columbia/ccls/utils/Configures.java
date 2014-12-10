@@ -1,4 +1,4 @@
-package com.enron;
+package edu.columbia.ccls.utils;
 
 public class Configures {
 	public static String dataFolder = "/Users/xiaohuang/Dropbox/BhavdeepFall2014/training_data/to_annotate/";

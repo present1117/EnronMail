@@ -1,4 +1,4 @@
-package com.enron;
+package edu.columbia.ccls.parseEnron;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +9,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import edu.columbia.ccls.utils.BOW;
+import edu.columbia.ccls.utils.Configures;
+import edu.columbia.ccls.utils.FileFunctions;
 
 public class MentionList {
 	public HashSet<String> mentionListDict;

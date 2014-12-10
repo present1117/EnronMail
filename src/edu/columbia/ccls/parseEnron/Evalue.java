@@ -1,4 +1,4 @@
-package com.enron;
+package edu.columbia.ccls.parseEnron;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import edu.columbia.ccls.utils.BOW;
+import edu.columbia.ccls.utils.Configures;
+import edu.columbia.ccls.utils.FileFunctions;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
