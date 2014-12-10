@@ -1,5 +1,5 @@
 =============
-Used for Enron emails Parsing
+Enron emails Parse
 ====
 
 # BOW
